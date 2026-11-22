@@ -1,0 +1,153 @@
+{
+  "handoff_base": "b7892fc2d201d679a4cea93a314ab31baeeb4fd6",
+  "archive_web_base": "a98493c5d7af31c1cf02372f13e58f3fa32caf77",
+  "archive_sources": {
+    "voiceprint/__init__.py": {
+      "bytes": 46,
+      "sha256": "ea7382068ae3f96c3fb31977b6db4e4c97d90e8f7f7adb12e91993ddda494813"
+    },
+    "voiceprint/app.py": {
+      "bytes": 21142,
+      "sha256": "641c79544c0504f24e411073989b72f0003fd462c17f46235839f7154e0b018d"
+    },
+    "voiceprint/model.py": {
+      "bytes": 2630,
+      "sha256": "7140420ca98650aa1a72945f7cb1779d35ca1ac1d928f02cc10cd41bd6b0255c"
+    },
+    "voiceprint/audio.py": {
+      "bytes": 1367,
+      "sha256": "876243a2d10d2e0c2e038818578cdd267f1abd1202b49c9162e4a3d11e9ce148"
+    },
+    "voiceprint/denoise.py": {
+      "bytes": 2780,
+      "sha256": "7f87a941012722c2218de55a038e0dd1b28ac3be0a1b8d54f553fed2845e09d2"
+    },
+    "voiceprint/denoise_web.py": {
+      "bytes": 1363,
+      "sha256": "0cae3d0a8eacac2d630a439ad50c5a1bdaf4cec898c3ec5f118454c92d90894f"
+    },
+    "voiceprint/self_trained.py": {
+      "bytes": 3470,
+      "sha256": "951b892231da8fc79746bf0fef67b9a806249474f6297570b6881659780d0c9d"
+    },
+    "experiments/robust/unified_inference.py": {
+      "bytes": 8978,
+      "sha256": "750e0b54c274da6d646c5ba78eee6ff7d912eccc4c99dc6f8ebdf6adb4f34e27"
+    },
+    "experiments/robust/inference_cache.py": {
+      "bytes": 1792,
+      "sha256": "6a5c72281a5207cd38884b3a829bccb1ce80fcc3c78108abc3e219c01ac9f0f8"
+    },
+    "experiments/robust/eval_readiness.py": {
+      "bytes": 2710,
+      "sha256": "f572a52e0b5a5d71daa6dfcfb42fc108081b977d4247cf93a7e764f403ea1a2b"
+    }
+  },
+  "published_files": {
+    "docs/PROJECT_ISSUES_LOG.md": {
+      "bytes": 138703,
+      "sha256": "a001e9eb755e683979b5a1d624c6d594cb4bec189734b084d04a3d81f9717ea9"
+    },
+    "docs/zrs-auth-08-11-01-r2/authorization-gap-list.json": {
+      "bytes": 939,
+      "sha256": "6e4cb2c725a59ac66dce7e1a438ead7da2a875e404dfe4a985fda1a685046ac0"
+    },
+    "docs/zrs-auth-08-11-01-r2/calibration-strategy-comparison.json": {
+      "bytes": 9677,
+      "sha256": "7fa946635e28886ef1f7517e0e3e47f14219fda6af5b59256ebf24d599059611"
+    },
+    "docs/zrs-auth-08-11-01-r2/design-lock.json": {
+      "bytes": 1445,
+      "sha256": "ef621637cccc677d74f618b357dbbeafc7a33b3b28a970f85bd304ffee0fd94d"
+    },
+    "docs/zrs-auth-08-11-01-r2/efficacy-versus-safety-matrix.json": {
+      "bytes": 1147,
+      "sha256": "1fa07641148e70ed5fff3ff395014b8eb5dc033b3f4b7b9b6ef02f6e9ce85675"
+    },
+    "docs/zrs-auth-08-11-01-r2/final-decision.json": {
+      "bytes": 516,
+      "sha256": "241226cbf89ecc85747677ed79992f333635c21a7e45fa1148242bf6bf097a6b"
+    },
+    "docs/zrs-auth-08-11-01-r2/gate-contribution-analysis.json": {
+      "bytes": 2520,
+      "sha256": "460e15c89a9b44c96884d9d153f3893f3716d4c4fbcb23ce107120b1ea04c70d"
+    },
+    "docs/zrs-auth-08-11-01-r2/gates.py": {
+      "bytes": 2315,
+      "sha256": "9923da71b775ffd42cf68d23312d4da73222aa176b1ce1cac7ce51e1393b7a07"
+    },
+    "docs/zrs-auth-08-11-01-r2/mechanisms.py": {
+      "bytes": 3678,
+      "sha256": "fa008750d603041c2d2be4128eb348e3fc549b894be033ff1616ddf5e663a69b"
+    },
+    "docs/zrs-auth-08-11-01-r2/replay.py": {
+      "bytes": 2579,
+      "sha256": "d6405fa2525492fe3319577473458326e82dcc25eba08c3d30aba10fe6dc931c"
+    },
+    "docs/zrs-auth-08-11-01-r2/simulation-integrity-review.json": {
+      "bytes": 4782,
+      "sha256": "941dcae93f0c72fdcb84170e33cfaee0885bbf00d99ca195e73768d94012622a"
+    },
+    "docs/zrs-auth-08-11-01-r2/simulation-v2-results.json": {
+      "bytes": 47066,
+      "sha256": "3392f46fa03d79e86c31ecc43ac3cd09addf536d125f66aad48ef98066abe745"
+    },
+    "docs/zrs-auth-08-11-01-r2/six-person-pilot-readiness.json": {
+      "bytes": 751,
+      "sha256": "50a80ff837df54b95b0267a0ecdc577424c1be267d82c648b2f48852904b81e0"
+    },
+    "docs/zrs-auth-08-11-01-r2/web_check.py": {
+      "bytes": 6693,
+      "sha256": "ec2bfc81c3fa57f5846b136b3a973c66af9e8a329f02d6ee24ec12894e230140"
+    },
+    "docs/zrs-auth-08-11-02-p0/feasibility-24.md": {
+      "bytes": 2990,
+      "sha256": "506083b1333ab0459d92d25e65297eabf9e9c9a9d436599f85f850bac4466c4c"
+    },
+    "docs/zrs-auth-08-11-02-p0/report.md": {
+      "bytes": 3247,
+      "sha256": "a71eb7e2ef8ab54ba799ee37526eed4ffa4803c0f05afc2f0e99925fb112bcb7"
+    },
+    "docs/zrs-auth-08-11-02-p0/status.md": {
+      "bytes": 494,
+      "sha256": "821a07136b3976b8577c2df5dd73e57c97f45fa50fdd6505ed41dfafc7ee91fa"
+    },
+    "docs/zrs-auth-08-11-02-p0/synthetic-web.log": {
+      "bytes": 414,
+      "sha256": "80061a0f37e48ff66bb16176a953dbbd53cc75e43a8abb989c29aebec9b37213"
+    },
+    "tests/test_study_withdrawal.py": {
+      "bytes": 9081,
+      "sha256": "8b726284181f85f93e615f9ad4e929817e7362f3a66564c8cecfaf0027dcb27a"
+    },
+    "tools/zrs_study_web.patch": {
+      "bytes": 4283,
+      "sha256": "aeebe1f277bea37855e00cb41e1a98fcf4e16ef75f636183089f878820bae85a"
+    },
+    "tools/zrs_study_withdrawal.py": {
+      "bytes": 4550,
+      "sha256": "9944cc13215de1f5f8fd317b3c23b9906824da367f3ded63a209423a753ccff1"
+    }
+  },
+  "r2_manifest": "docs/zrs-auth-08-11-01-r2/source-manifest.json",
+  "r2_manifest_sha256": "54fa640b29e629767981c90f6aa0b20ba60b98ff0bcf02f89db3a605a8564048",
+  "r2_synced": [
+    "simulation-integrity-review.json",
+    "gate-contribution-analysis.json",
+    "calibration-strategy-comparison.json",
+    "efficacy-versus-safety-matrix.json",
+    "simulation-v2-results.json",
+    "six-person-pilot-readiness.json",
+    "authorization-gap-list.json",
+    "final-decision.json",
+    "design-lock.json",
+    "replay.py",
+    "gates.py",
+    "mechanisms.py",
+    "web_check.py"
+  ],
+  "excluded": [
+    "compare.py"
+  ],
+  "manifest_self_excluded": true
+}

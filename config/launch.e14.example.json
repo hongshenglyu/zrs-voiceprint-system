@@ -1,0 +1,7 @@
+{
+  "mode": "E14",
+  "study_dir": "C:/ZRS/e14-data",
+  "port": 8765,
+  "e14_config": "C:/ZRS/e14-data/.local/self-trained/e14-assets/model.json",
+  "policy_approval": null
+}

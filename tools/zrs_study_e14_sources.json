@@ -1,0 +1,6 @@
+{
+  "experiments/ecapa_training_r108_fix02/__init__.py": "0f210e7ace0732a50be9978e7f342c722cbc1334e51d5deea0c1c4da7e6377ec",
+  "experiments/ecapa_training_r108_fix02/model.py": "f7c268a9618324cadbd796d4cf283f0a6556873e161e7bb81bb5cc8124050860",
+  "experiments/ecapa_training_r108_fix02/augment.py": "08114e44db131268a6c0b64bd3cdc43304b0a1180bb50e5d09322aa063f3346b",
+  "experiments/ecapa_training_r108_fix02/deterministic_padding.py": "dd3118a9603afdf932956cea337349d38b3fb21019133ac807591252925e592d"
+}

@@ -1,0 +1,111 @@
+--- a/voiceprint/app.py
++++ b/voiceprint/app.py
+@@ -1,4 +1,5 @@
+ import hmac
++import hashlib
+ import json
+ import logging
+ import re
+@@ -101,6 +102,8 @@
+             for name, kind in (('preprocessing_version', 'TEXT'), ('denoise', 'INTEGER'), ('model_sha256', 'TEXT')):
+                 if name not in columns:
+                     db.execute(f'ALTER TABLE {table} ADD COLUMN {name} {kind}')
++        if 'source_batch_sha256' not in {row['name'] for row in db.execute('PRAGMA table_info(users)')}:
++            db.execute('ALTER TABLE users ADD COLUMN source_batch_sha256 TEXT')
+         columns = {r['name'] for r in db.execute('PRAGMA table_info(records)')}
+         for name in ('model', 'model_mode'):
+             if name not in columns:
+@@ -180,15 +183,23 @@
+     return normalize(vector)
+ 
+ 
+-def extract(raw, registration=False, denoise=False):
+-    x = decode(raw)
++def center_window(x):
++    if len(x) < 48000:
++        raise ValueError('当前处理模式需要至少3秒录音')
++    start = (len(x)-48000)//2
++    center = x[start:start+48000]
++    if not np.isfinite(center).all() or np.sqrt(np.mean(center * center)) < .0001:
++        raise ValueError('音频的中心3秒静音或无效，请重新录制')
++    return center
++
++
++def extract(raw, registration=False, denoise=False, decoded=None):
++    x = decode(raw) if decoded is None else decoded
+     if registration and not 3 <= len(x)/16000 <= 5:
+         raise ValueError('注册语音每段须为 3～5 秒')
+     info = dict(quality(x), denoise=denoise, denoise_ms=0.)
+     if DENOISE_MODE:
+-        if len(x) < 48000:raise ValueError('当前处理模式需要至少3秒录音')
+-        start = (len(x)-48000)//2
+-        x, event = denoise_3s(x[start:start+48000].copy(), denoise)
++        x, event = denoise_3s(center_window(x).copy(), denoise)
+         info.update(denoise=denoise, denoise_ms=event['processing_ms'], input_samples=48000)
+     elif denoise:
+         raise HTTPException(409, '当前服务未启用自训练降噪模式')
+@@ -238,8 +249,19 @@
+     raw = [read_audio(f) for f in files]
+     if len(set(raw)) != len(raw):
+         raise ValueError('请使用不同的录音，不能重复上传同一文件')
++    decoded = [decode(item) for item in raw]
++    source_hashes = [hashlib.sha256(center_window(wave).tobytes()).hexdigest() for wave in decoded]
++    if len(set(source_hashes)) != len(source_hashes):
++        raise ValueError('注册音频包含重复的中心3秒，请更换录音')
++    batch_sha = hashlib.sha256(''.join(sorted(source_hashes)).encode('ascii')).hexdigest()
+     with connect() as db:
+         withdrawal.check_enrollment(db, user_id, denoise)
++        paired = db.execute('SELECT source_batch_sha256 FROM users WHERE user_id=?',
++                            (user_id[:-3] + '-off' if denoise else user_id[:-4] + '-on',)).fetchone()
++        if paired and paired['source_batch_sha256'] is None:
++            raise HTTPException(409, '已有注册缺少来源记录，请撤回后新建身份')
++        if paired and paired['source_batch_sha256'] != batch_sha:
++            raise HTTPException(409, '与已注册模式的音频批次不同，请重选原批次或撤回后新建身份')
+         existing = db.execute('SELECT * FROM users WHERE user_id=?', (user_id,)).fetchone()
+         old = db.execute('SELECT embedding_path FROM voiceprint_templates WHERE user_id=?', (user_id,)).fetchone()
+         if expected_version is not None:
+@@ -251,7 +273,8 @@
+                 managed_path(old['embedding_path'])
+         elif existing:
+             raise HTTPException(409, '用户 ID 已存在')
+-    extracted = [extract(r, registration=True, denoise=denoise) for r in raw]
++    extracted = [extract(item, registration=True, denoise=denoise, decoded=wave)
++                 for item, wave in zip(raw, decoded)]
+     template = normalize_current(np.mean([v for v, _ in extracted], axis=0))
+     version = model_version()
+     template_id = uuid.uuid4().hex
+@@ -269,9 +292,9 @@
+                 db.execute('DELETE FROM users WHERE user_id=?', (user_id,))
+                 if old:
+                     db.execute('INSERT OR IGNORE INTO pending_template_deletions(path) VALUES(?)', (old['embedding_path'],))
+-            db.execute('INSERT INTO users(user_id,username,embedding,sample_count,model,model_version,template_version,preprocessing_version,denoise,model_sha256) VALUES(?,?,?,?,?,?,?,?,?,?)',
++            db.execute('INSERT INTO users(user_id,username,embedding,sample_count,model,model_version,template_version,preprocessing_version,denoise,model_sha256,source_batch_sha256) VALUES(?,?,?,?,?,?,?,?,?,?,?)',
+                        (user_id, username.strip(), json.dumps(template.tolist()), len(files), MODEL_ID, version, template_id,
+-                        preprocessing, int(denoise), getattr(load_model(), 'checkpoint_sha256', None) if DENOISE_MODE else None))
++                        preprocessing, int(denoise), getattr(load_model(), 'checkpoint_sha256', None) if DENOISE_MODE else None, batch_sha))
+             db.execute('INSERT INTO voiceprint_templates(voiceprint_id,user_id,embedding_path,sample_count) VALUES(?,?,?,?)',
+                        (template_id, user_id, str(template_path.resolve()), len(files)))
+     except sqlite3.IntegrityError as exc:
+--- a/voiceprint/denoise_web.py
++++ b/voiceprint/denoise_web.py
+@@ -5,11 +5,17 @@
+ from .denoise import settings,identity
+ 
+ 
++# P4 enrollment guards do not change accepted-wave scoring. Keep the P3
++# scoring provenance for existing templates and their exact policy bindings.
++def scoring_sources():
++    return dict(zip(('web_source_sha256', 'app_source_sha256'),
++                    Path(__file__).with_name('p3-scoring-sources.txt').read_text().splitlines()))
++
++
+ def processing_version(model_version,enable):
+     return identity(dict(model_version=model_version,crop='center_48000',normalization='float64_l2_mean_l2',
+-                         denoise=settings(enable),web_source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+-                         app_source_sha256=hashlib.sha256(Path(__file__).with_name('app.py').read_bytes()).hexdigest(),
+-                         adapter_source_sha256=hashlib.sha256(Path(__file__).with_name('self_trained.py').read_bytes()).hexdigest()))
++                         denoise=settings(enable),adapter_source_sha256=hashlib.sha256(Path(__file__).with_name('self_trained.py').read_bytes()).hexdigest(),
++                         **scoring_sources()))
+ 
+ 
+ def embedding(wave):

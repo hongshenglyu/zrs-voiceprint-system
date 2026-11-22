@@ -1,0 +1,92 @@
+--- a/voiceprint/app.py
++++ b/voiceprint/app.py
+@@ -49,6 +49,7 @@
+ operator_token = os.environ['VOICEPRINT_STUDY_TOKEN']
+ if len(operator_token) < 32 or not operator_token.isascii():
+     raise ValueError('研究操作员令牌须为至少 32 位 ASCII 字符')
++E14_POLICIES = {}
+ _templates_lock = RLock()
+ 
+ 
+@@ -332,28 +333,9 @@
+             or Path(stored['embedding_path']).stem != user['template_version']):
+         raise HTTPException(503, '模板版本索引不一致')
+     vector, info = extract(read_audio(file), denoise=denoise)
+-    threshold = .7
+-    calibrated = False
+-    config = DATA / ('thresholds-denoise-'+('on' if denoise else 'off')+'.json' if DENOISE_MODE else 'thresholds.json')
+-    if MODEL_MODE == 'SELF_TRAINED':
+-        try:
+-            bound = formal_policy(config, version)
+-            if DENOISE_MODE:
+-                if bound.get('preprocessing_version') != preprocessing or bound.get('denoise') is not denoise:
+-                    raise ValueError('降噪阈值策略不匹配')
+-        except (OSError, ValueError, KeyError, TypeError) as exc:
+-            raise HTTPException(503, '正式认证未就绪：需要绑定当前模型的独立 Dev 标定阈值') from exc
+-    if config.exists():
+-        try:
+-            policy = bound if DENOISE_MODE else json.loads(config.read_text(encoding='utf-8'))
+-            if policy['model'] != MODEL_ID or policy['model_version'] != version:
+-                raise ValueError('模型不匹配')
+-            threshold = float(policy.get(info['environment'], policy['global']))
+-            if not np.isfinite(threshold) or not -1 <= threshold <= 1.000001:
+-                raise ValueError('阈值越界')
+-        except (OSError, ValueError, KeyError, TypeError) as exc:
+-            raise HTTPException(503, '阈值配置无效或未绑定当前模型，请重新标定') from exc
+-        calibrated = True
++    policy = E14_POLICIES.get(denoise)
++    threshold = policy['threshold'] if policy else None
++    calibrated = policy is not None
+     try:
+         # 历史 JSON 列保留，不再作为缺失文件或索引的认证回退。
+         template = normalize_current(np.load(stored['embedding_path'], allow_pickle=False))
+@@ -363,12 +345,14 @@
+         logging.exception('Voiceprint template unavailable')
+         raise HTTPException(503, '声纹模板无法读取，请检查服务器日志') from exc
+     similarity = float(np.clip(np.dot(vector, template), -1, 1))
+-    accepted = similarity >= threshold
++    accepted = similarity >= threshold if calibrated else None
+     with connect() as db:
+         db.execute('INSERT INTO records(user_id,similarity,threshold,environment,accepted,model,model_mode,model_version,template_version,preprocessing_version,denoise,model_sha256) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',
+-                   (user_id, similarity, threshold, info['environment'], int(accepted), MODEL_ID, MODEL_MODE, version, user['template_version'],
++                   (user_id, similarity, threshold, info['environment'], int(accepted) if calibrated else None, MODEL_ID, MODEL_MODE, version, user['template_version'],
+                     preprocessing, int(denoise), user['model_sha256']))
+     return dict(similarity=similarity, threshold=threshold, accepted=accepted,
++                policy_version=policy['policy_version'] if policy else None,
++                historical_policy_sha256=policy['source_sha256'] if policy else None,
+                 calibrated=calibrated, model=MODEL_ID, model_mode=MODEL_MODE,
+                 model_version=version, template_version=user['template_version'],
+                 user_id=user_id, preprocessing_version=preprocessing, processing_ms=round((perf_counter()-started)*1000),
+@@ -407,24 +391,14 @@
+     with connect() as db:
+         count = db.execute('SELECT COUNT(*) FROM users').fetchone()[0]
+     dimension = (192 if MODEL_MODE == 'SELF_TRAINED' else model._model.mods.embedding_model.fc.conv.out_channels) if model._model is not None else None
+-    ready = MODEL_MODE == 'TEST_ONLY'
+-    denoise_ready = False
+-    if MODEL_MODE == 'SELF_TRAINED':
+-        try:
+-            path = DATA / ('thresholds-denoise-off.json' if DENOISE_MODE else 'thresholds.json')
+-            policy = formal_policy(path, model_version())
+-            if DENOISE_MODE and (policy.get('preprocessing_version') != processing_version(False) or policy.get('denoise') is not False):
+-                raise ValueError('关闭降噪的阈值绑定不匹配')
+-            ready = True
+-        except (OSError, ValueError, KeyError, TypeError):
+-            ready = False
+-        if DENOISE_MODE:
+-            try:
+-                policy = formal_policy(DATA / 'thresholds-denoise-on.json', model_version())
+-                denoise_ready = policy.get('preprocessing_version') == processing_version(True) and policy.get('denoise') is True
+-            except (OSError, ValueError, KeyError, TypeError):
+-                denoise_ready = False
+-    return dict(backend='Running', model_loaded=model._model is not None,
++    ready = False in E14_POLICIES
++    denoise_ready = True in E14_POLICIES
++    return dict(backend='Running', runtime_mode='E14',
++                diagnostic_ready=model._model is not None,
++                model_sha256=load_model().checkpoint_sha256,
++                preprocessing_versions={arm: processing_version(arm == 'on') for arm in ('off', 'on')},
++                policy_versions={arm: E14_POLICIES.get(arm == 'on', {}).get('policy_version') for arm in ('off', 'on')},
++                model_loaded=model._model is not None,
+                 embedding_dimension=dimension, registered_users=count,
+                 model=MODEL_ID, model_mode=MODEL_MODE, model_version=model_version(), authentication_ready=ready,
+                 denoise_available=DENOISE_MODE, denoise_ready=denoise_ready, denoise_default=False)

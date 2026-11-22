@@ -1,0 +1,11 @@
+{
+  "kind": "candidate-research",
+  "protocol_version": "v2",
+  "policy_version": "zrs-v2-draft-01",
+  "approval_status": "PENDING",
+  "model_sha256": "3570c7725a27a392efec7e5824857d50701f0f3c0fded68a78d0e3b82439324d",
+  "arms": {
+    "off": {"denoise": false, "preprocessing_version": null, "threshold_source": null, "threshold": null},
+    "on": {"denoise": true,  "preprocessing_version": null, "threshold_source": null, "threshold": null}
+  }
+}

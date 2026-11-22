@@ -1,0 +1,6 @@
+{
+  "checkpoint": "baseline_best14.ckpt",
+  "checkpoint_sha256": "3570c7725a27a392efec7e5824857d50701f0f3c0fded68a78d0e3b82439324d",
+  "training_config": "frozen-training.yaml",
+  "training_config_sha256": "81aa46aa7b4d9b14715370c60207f8a38c6a07d6a0fc0448597aa40662a2dab9"
+}

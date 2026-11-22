@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#080d20">
+  <title>ZRS · 声纹身份认证系统</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="/static/zrs-theme.css">
+  <script defer src="/static/study.js?v=identity-status-1"></script>
+  <script defer src="/static/zrs-visuals.js?v=identity-status-1"></script>
+</head>
+<body>
+  <div class="ambient ambient-a" aria-hidden="true"></div>
+  <div class="ambient ambient-b" aria-hidden="true"></div>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-icon">▥</span><span>ZRS<span class="brand-minor"> / VOICE ID</span></span></div>
+      <p class="side-kicker">本机声纹验证</p>
+      <nav class="side-nav" aria-label="功能导航">
+        <a class="nav-item active" href="#section-dashboard"><span class="nav-icon">⌂</span> 工作台</a>
+        <a class="nav-item" href="#section-identities"><span class="nav-icon">♙</span> 身份管理</a>
+        <a class="nav-item" href="#section-register"><span class="nav-icon">♬</span> 声纹注册</a>
+        <a class="nav-item" href="#section-verify"><span class="nav-icon">◎</span> 身份验证</a>
+        <a class="nav-item" href="#section-records"><span class="nav-icon">☷</span> 验证记录</a>
+        <a class="nav-item" href="#section-withdraw"><span class="nav-icon">↺</span> 删除声纹</a>
+        <a class="nav-item" href="#section-settings"><span class="nav-icon">⚙</span> 系统状态</a>
+      </nav>
+      <div class="sidebar-foot"><span class="dot green"></span> 本地研究演示环境<br><small>毕业设计演示</small></div>
+    </aside>
+
+    <div class="content">
+      <header class="topbar">
+        <div class="top-title"><strong>ZRS 声纹身份认证系统</strong><span>噪声环境下声纹身份认证系统的设计与实现</span></div>
+        <div class="top-chips"><span class="chip" id="model-badge"><span class="dot"></span> 等待登录</span><span class="chip" id="policy-badge">等待检查</span><span class="chip"><span class="dot green"></span> 127.0.0.1 · 本地</span><button type="button" id="logout" class="button subtle logout">退出登录</button></div>
+      </header>
+      <main>
+        <section class="login-card glow-card" id="login-panel">
+          <div class="login-sigil" aria-hidden="true"><div class="orb-ring"></div><span>◉</span></div>
+          <div><h1>进入声纹验证</h1><p id="intro">使用本机账号登录。</p>
+            <form id="login"><label for="account">账号</label><input id="account" name="account" autocomplete="username" required><label for="password">密码</label><input id="password" name="password" type="password" autocomplete="current-password" required><button type="submit" class="button primary">登录</button></form>
+            <p id="session" class="session-message" role="status">等待进入</p>
+          </div>
+        </section>
+
+        <div id="study" hidden>
+          <div id="demo-policy-note" class="demo-note" hidden>本机演示结果仅供参考，请勿用于实际身份核验。</div>
+          <section id="section-dashboard" class="app-section page-dashboard">
+            <div class="page-head"><div><h1>声纹工作台</h1><p class="muted">先保存声音，之后就能录音验证。</p></div><a href="#section-register" class="button primary quick-link">＋ 开始注册</a></div>
+            <div class="stats-grid">
+              <article class="stat-card"><span class="stat-icon">♙</span><span>身份数量</span><strong id="stat-users">—</strong><small>已建立身份</small></article>
+              <article class="stat-card"><span class="stat-icon cyan">▱</span><span>已保存的声纹</span><strong id="stat-templates">—</strong><small>含开启与关闭降噪</small></article>
+              <article class="stat-card"><span class="stat-icon purple">≋</span><span>验证记录</span><strong id="stat-records">—</strong><small>本地存储</small></article>
+              <article class="stat-card"><span class="stat-icon green">✓</span><span>系统状态</span><strong id="stat-health">待解锁</strong><small>本地服务状态</small></article>
+            </div>
+            <div class="hero-layout">
+              <div class="hero-panel glow-card">
+                <div class="hero-copy"><h2>用声音验证身份</h2><p>第一次使用？录五段声音完成注册。已注册的用户可以直接验证。</p></div>
+                <div class="mic-hero">
+                  <div class="mic-stage" aria-hidden="true">
+                    <canvas id="hero-art" width="640" height="400"></canvas>
+                  </div>
+                  <span class="mic-caption" id="hero-state">麦克风待开启</span>
+                </div>
+                <div class="hero-actions"><a href="#section-register" class="button primary quick-link">开始声纹注册</a><a href="#section-verify" class="button subtle quick-link">身份验证 →</a></div>
+              </div>
+              <div class="wave-panel glass-card"><div class="panel-head"><h3>录音波形</h3></div><canvas id="hero-wave" class="large-wave" width="560" height="180" aria-label="语音信号波形"></canvas><div class="live-state"><span class="dot" id="live-dot"></span><span id="mic-live">未开启麦克风</span><span id="mic-timer">00:00</span></div><p class="tiny muted">录音时显示声音变化，停止后可回看。</p></div>
+            </div>
+          </section>
+
+          <section id="section-identities" class="app-section">
+            <div class="page-head"><div><h2>身份管理</h2><p class="muted">选择已有身份，或添加一个新身份。</p></div><button id="create" type="button" class="button primary">＋ 添加身份</button></div>
+            <form id="create-identity" class="glass-card identity-form" hidden>
+              <label for="identity-name">你的名字或昵称</label>
+              <input id="identity-name" required maxlength="40" placeholder="例如：小林" autocomplete="off">
+              <div class="button-row"><button type="submit" class="button primary">开始录音</button><button id="cancel-identity" type="button" class="button subtle">取消</button></div>
+            </form>
+            <div class="identity-layout"><div class="glass-card"><div class="panel-head"><h3>身份列表</h3><span class="mini-label" id="identity-count">0 个</span></div><div class="search-wrap"><input type="search" id="identity-search" placeholder="搜索名称或编号" aria-label="搜索名称或编号"></div><div id="identity-cards" class="identity-grid"><span class="muted">登录后显示身份</span></div></div>
+              <div class="glass-card identity-detail"><div class="panel-head"><h3>所选身份详情</h3></div><div class="mini-scanner"><div class="mini-orbit"></div><span>♙</span></div><label for="participant">选择身份</label><select id="participant"></select><output id="arms" for="participant" class="arm-state">正在读取注册状态</output><div class="arm-cards"><div><b>关闭降噪</b><span id="arm-off-state">未注册</span></div><div><b>开启降噪</b><span id="arm-on-state">未注册</span></div></div><div class="detail-links"><a href="#section-register" class="button subtle quick-link">继续注册</a><a href="#section-verify" class="button primary quick-link">前往验证</a></div></div>
+            </div>
+          </section>
+
+          <section id="section-register" class="app-section">
+            <div class="page-head"><div><h2>声纹注册</h2><p class="muted">选好身份后，录五段声音，再保存。</p></div></div>
+            <div class="steps"><span class="step active"><em>01</em>选择身份</span><span class="arrow">›</span><span class="step active"><em>02</em>录五段声音</span><span class="arrow">›</span><span class="step"><em>03</em>保存声纹</span></div>
+            <div class="register-layout">
+              <div class="glass-card record-stage"><div class="panel-head"><h3>录制声音</h3></div><div class="record-visual"><div class="record-aura" aria-hidden="true"><div class="record-core">♫</div></div><canvas id="register-wave" width="650" height="156" aria-label="注册录音实时波形"></canvas><div class="record-status" id="register-live-text" role="status">尚未开始录音</div></div>
+                <p id="recording-mode-note" class="help-line" hidden></p><div class="help-line">当前注册身份：<strong id="register-identity">尚未选择</strong></div><form id="enroll"><label id="clips-label" for="clips">也可上传五段录音（WAV、MP3、MP4 等）</label><input id="clips" type="file" accept=".wav,.mp3,.mp4,.m4a,.mov,.aac,.flac,.ogg,.opus,.webm,.wma" multiple required aria-describedby="enroll-duration"><p id="enroll-duration" class="help-line">每段录音可上传 3–15 秒。超过 5 秒会自动取中间一段，不足 3 秒请补录。</p><div class="recording-grid" id="clip-cards"></div><div class="button-row"><button type="button" id="record-enroll" class="button cyan">● 录制下一段</button><button type="button" id="stop-recording" class="button subtle" disabled>■ 停止录音</button><button type="button" id="clear-recordings" class="button subtle">清空已录音频</button><button type="submit" class="button primary">保存声纹</button></div></form>
+              </div>
+              <div class="glass-card template-panel"><div class="panel-head"><h3>注册状态</h3></div><div class="template-box"><div class="template-heading">≋ <b>关闭降噪</b><span id="template-off">未注册</span></div><div class="flow-progress"><i id="template-off-bar"></i></div><small>保留原声</small></div><div class="template-box"><div class="template-heading">≋ <b>开启降噪</b><span id="template-on">未注册</span></div><div class="flow-progress"><i id="template-on-bar"></i></div><small>减少背景声音</small></div><p class="security-note">保存后可以用两种方式验证。若只保存了一种，请用原来的五段录音重试。</p></div>
+            </div>
+          </section>
+
+          <section id="section-verify" class="app-section">
+            <div class="page-head"><div><h2>验证身份</h2><p class="muted">选好身份，录一段声音或选择录音，然后点“验证”。</p></div></div>
+            <div class="verify-layout"><div class="glass-card verify-controls"><div class="panel-head"><h3>验证设置</h3></div><label for="mode">降噪设置</label><select id="mode"><option value="off">关闭降噪</option><option value="on">开启降噪</option></select><div class="callout"><b>当前验证身份</b><strong id="verify-identity">尚未选择</strong><a class="change-identity" href="#section-identities">更换身份</a><span id="current-mode" class="tiny muted">请先选择身份</span><button id="retry-identity-data" type="button" class="button subtle" hidden>重新读取身份</button></div></div>
+              <div class="glass-card verify-capture"><div class="scan-small"><div class="scanner-track"></div><div class="scan-microphone">♬</div></div><h3>录音</h3><canvas id="verify-wave" width="620" height="142" aria-label="验证音频波形"></canvas><form id="verify"><label id="probe-label" for="probe">上传一段录音（WAV、MP3、MP4 等）</label><input id="probe" type="file" accept=".wav,.mp3,.mp4,.m4a,.mov,.aac,.flac,.ogg,.opus,.webm,.wma" required><div class="button-row centered"><button id="record-verify" type="button" class="button cyan">● 麦克风录音</button><button type="button" id="stop-verify-recording" class="button subtle" disabled>■ 停止</button><button type="submit" class="button primary">验证</button></div></form></div>
+              <div class="glass-card verify-outcome"><div class="panel-head"><h3>验证结果</h3></div><div class="score-dial" id="score-dial"><div><strong id="score-value">—</strong><span>相似度</span></div></div><div class="result-summary"><span>降噪设置</span><b id="result-mode">—</b><span>通过标准</span><b id="result-threshold">—</b><span>处理耗时</span><b id="result-time">—</b></div><div id="decision-banner" class="decision-banner">等待验证</div><p class="tiny muted">只显示相似度时，系统不会判断是否通过。</p></div></div>
+            <div class="compare-pane glass-card"><div><b>比较降噪效果</b><p class="tiny muted">用同一段录音验证两次，比较开启和关闭降噪的结果。</p></div><button type="button" class="button subtle" id="compare-both">比较开关降噪</button><div id="compare-results" class="compare-results muted">尚无对照结果</div></div>
+          </section>
+
+          <section id="section-records" class="app-section"><div class="page-head"><div><h2>验证记录</h2><p class="muted">最近验证结果，按时间从新到旧排列。</p></div><button type="button" id="refresh-records" class="button subtle">↻ 刷新记录</button></div><div class="glass-card"><div class="table-scroll"><table><thead><tr><th>时间</th><th>身份编号</th><th>降噪设置</th><th>相似度</th><th>通过标准</th><th>结果</th></tr></thead><tbody id="records-body"><tr><td colspan="6">解锁后加载</td></tr></tbody></table></div></div></section>
+
+          <section id="section-withdraw" class="app-section"><div class="page-head"><div><h2>删除声纹</h2><p class="muted">删除身份会同时清除已保存的声纹和相关验证记录。</p></div></div><div class="withdraw-layout"><div class="glass-card"><div class="panel-head"><h3>要删除的身份</h3><span class="chip danger">敏感操作</span></div><div class="withdraw-person">♙ <b id="withdraw-identity">尚未选择身份</b></div><div class="asset-rows"><div><span>关闭降噪</span><b id="withdraw-off">—</b></div><div><span>开启降噪</span><b id="withdraw-on">—</b></div><div><span>验证记录</span><b>随身份一并删除</b></div></div><div class="warning-text">删除前需要确认。恢复旧备份后，这个身份也不会重新出现。</div><button id="withdraw" type="button" class="button danger-button">删除身份</button></div><div class="glass-card"><div class="panel-head"><h3>备份与恢复流程</h3></div><div class="restore-flow"><div><span>01</span><b>备份数据</b><small>请先关闭系统</small></div><div><span>02</span><b>从备份恢复</b><small>保留最新删除记录</small></div><div><span>03</span><b>检查已删除身份</b><small>确认已删除身份不会恢复</small></div></div><p class="tiny muted">如需备份或恢复，请联系管理员。</p></div></div></section>
+
+          <section id="section-settings" class="app-section"><div class="page-head"><div><h2>系统状态</h2></div></div><div class="glass-card settings-grid"><div><small>当前模型</small><strong id="settings-model">—</strong></div><div><small>验证方式</small><strong id="settings-policy">—</strong></div><div><small>录音设置</small><strong id="settings-preprocess">—</strong></div><div><small>当前连接</small><strong>本机</strong></div></div><p class="footnote">ZRS-013 保持 OPEN：历史 Clean Dev 通过标准不等于生产级身份认证安全保证。非语音信号可能出现误接，界面视觉效果不改变模型输出。</p></section>
+        </div>
+        <output id="result" role="status" class="global-result" aria-live="polite"></output>
+      </main>
+      <footer class="app-footer">ZRS 声纹身份认证系统 · 本地本科毕业设计演示 · 不提供生产级安全保证</footer>
+    </div>
+  </div>
+</body>
+</html>

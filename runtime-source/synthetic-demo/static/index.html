@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>声纹身份认证</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <style>
+    main { max-width: 780px; margin-block: 40px; }
+    section { margin-top: 28px; padding-top: 20px; border-top: 1px solid #cbd6d1; }
+    section h2 { margin: 0; font-size: 1.25rem; }
+    .identity-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    select { min-width: 0; max-width: 100%; padding: 9px; font: inherit; color: inherit;
+             background: #fff; border: 1px solid #859c99; border-radius: 5px; }
+    select:focus-visible { outline: 3px solid #c57b23; outline-offset: 3px; }
+    #participant { width: min(100%, 27rem); }
+    input[type=file] { max-width: 100%; }
+    output { display: block; white-space: pre-line; margin-block: 12px; }
+    #withdraw { color: #fff; background: #842e2e; border-color: #842e2e; }
+  </style>
+  <script defer src="/static/study.js"></script>
+</head>
+<body>
+<main>
+  <h1>声纹身份认证</h1>
+  <p id="intro">在同一参与者编号下比较关闭和开启降噪的结果。请使用启动器生成的合成 WAV。</p>
+  <form id="login">
+    <label for="token">操作员令牌</label>
+    <input id="token" type="password" autocomplete="off" required>
+    <p><button>解锁研究操作</button></p>
+  </form>
+  <p id="session" role="status">等待操作员解锁</p>
+  <div id="study" hidden>
+    <p id="demo-policy-note" hidden>历史 Clean Dev 阈值仅供本地毕设演示。实际部署安全性待验证。</p>
+    <label for="participant">选择身份</label>
+    <div class="identity-row">
+      <select id="participant"></select>
+      <button id="create" type="button">创建新身份</button>
+    </div>
+    <output id="arms" for="participant">正在读取模板状态</output>
+    <section>
+      <form id="enroll">
+        <h2>双臂注册</h2>
+        <label id="clips-label" for="clips">选择 01–05.wav，共五段</label>
+        <input id="clips" type="file" accept=".wav" multiple required>
+        <p><button>注册双臂</button></p>
+      </form>
+    </section>
+    <section>
+      <form id="verify">
+        <h2>身份验证</h2>
+        <label for="mode">认证模式</label>
+        <select id="mode">
+          <option value="off">关闭降噪</option>
+          <option value="on">开启降噪</option>
+        </select>
+        <label id="probe-label" for="probe">选择 06.wav</label>
+        <input id="probe" type="file" accept=".wav" required>
+        <p><button>验证所选身份</button></p>
+      </form>
+    </section>
+    <section>
+      <h2>撤回参与者</h2>
+      <p>同一编号的两臂模板和关联评分将一并清除。</p>
+      <button type="button" id="withdraw">撤回双臂</button>
+    </section>
+  </div>
+  <output id="result" role="status"></output>
+</main>
+</body>
+</html>

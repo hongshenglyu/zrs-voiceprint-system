@@ -1,0 +1,14 @@
+--- a/voiceprint/app.py
++++ b/voiceprint/app.py
+@@ -420,7 +420,7 @@
+ 
+ @app.get('/')
+ def home():
+-    return FileResponse(ROOT / 'static/index.html')
+-
+-
+-app.mount('/static', StaticFiles(directory=ROOT / 'static'), name='static')
++    return FileResponse(Path(__file__).resolve().parents[1] / 'static/index.html')
++
++
++app.mount('/static', StaticFiles(directory=Path(__file__).resolve().parents[1] / 'static'), name='static')
