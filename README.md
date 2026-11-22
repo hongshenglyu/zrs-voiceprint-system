@@ -28,3 +28,7 @@ Copy-Item config/launch.synthetic.example.json launch.local.json
 - tests 包含会话、音频时长和音频质量回归。测试用合成数据。
 
 本地演示仅适用于说明系统功能。模型权重、原始音视频、账户及数据保存在访问受限的独立目录。第三方软件和数据的权利归其所有。
+
+## 实验汇总
+
+已发布的训练和正式条件评价汇总在 [evidence](evidence/)。
